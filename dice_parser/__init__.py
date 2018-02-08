@@ -24,7 +24,9 @@ class ParseResult:
                     template.format(*(x.string for x in args)),
                     sum((x.dice for x in args), [])
                 )
+
             return decorated
+
         return decorator
 
 
@@ -93,24 +95,24 @@ class Transformer(InlineTransformer):
 class DiceParser:
     GRAMMAR = """
         NAME: /[a-z_]+/
-    
+
         ?start: sum
               | NAME "=" sum    -> assign_var
-    
+
         ?sum: product
             | sum "+" product   -> add
             | sum "-" product   -> sub
-    
+
         ?product: atom
             | product "*" atom  -> mul
             | product "/" atom  -> div
-    
+
         ?atom: /\d*d\d*/        -> roll
              | /\d+/            -> number
              | "-" atom         -> neg
              | NAME             -> var
              | "(" sum ")"      -> brackets
-    
+
         %import common.WS_INLINE
         %ignore WS_INLINE
     """
