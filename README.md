@@ -1,2 +1,2 @@
-# dice_expression
-Arithmetic expression with dice roll support
+# dice_parser
+Arithmetic expressions with dice roll support
