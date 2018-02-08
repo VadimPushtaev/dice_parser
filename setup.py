@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name='dice_parser',
-    version='0.2',
+    version='0.3',
     packages=['dice_parser'],
-    extras_require=['lark'],
+    install_requires=['lark-parser'],
     url='https://github.com/VadimPushtaev/dice_parser',
     license='MIT',
     author='Vadim Pushtaev',
