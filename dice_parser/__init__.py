@@ -6,13 +6,20 @@ from lark import Lark, InlineTransformer
 
 
 class ParseResult:
-    def __init__(self, value, string, dice):
+    def __init__(self, value, string, dice, flag=None):
         self.value = value
         self.string = string
         self.dice = dice
+        self.flag = flag
 
     def __repr__(self):
-        return '{}({}, {}, {})'.format(type(self).__name__, repr(self.value), repr(self.string), repr(self.dice))
+        return '{}({}, {}, {}, {})'.format(
+            type(self).__name__,
+            repr(self.value),
+            repr(self.string),
+            repr(self.dice),
+            repr(self.flag)
+        )
 
     @classmethod
     def operator(cls, operator_callable, template):
@@ -60,10 +67,14 @@ class Transformer(InlineTransformer):
     def brackets(self, result):
         return ParseResult(result.value, '({})'.format(result.string), result.dice)
 
-    def roll(self, template):
-        count_s, size_s = template.split('d')
-        count = int(count_s) if count_s else 1
-        size = int(size_s) if size_s else 20
+    def roll(self, *args):
+        count = 1
+        size = 20
+        for arg in args:
+            if arg.flag == 'left':
+                count = arg.value
+            if arg.flag == 'right':
+                size = arg.value
 
         dice = []
         for _ in range(int(count)):
@@ -91,28 +102,39 @@ class Transformer(InlineTransformer):
     def var(self, name):
         return self.vars[name]
 
+    def left_atom(self, atom):
+        return ParseResult(atom.value, atom.string, atom.dice, 'left')
+
+    def right_atom(self, atom):
+        return ParseResult(atom.value, atom.string, atom.dice, 'right')
+
 
 class DiceParser:
     GRAMMAR = """
         NAME: /[a-z_]+/
 
         ?start: sum
-              | NAME "=" sum    -> assign_var
+            | NAME "=" sum     -> assign_var
 
         ?sum: product
-            | sum "+" product   -> add
-            | sum "-" product   -> sub
+            | sum "+" product  -> add
+            | sum "-" product  -> sub
 
-        ?product: atom
-            | product "*" atom  -> mul
-            | product "/" atom  -> div
+        ?product: die
+            | product "*" die  -> mul
+            | product "/" die  -> div
+        
+        ?die: atom
+            | left_atom? "d" right_atom?  -> roll  
 
-        ?atom: /\d*d\d*/        -> roll
-             | /\d+/            -> number
-             | "-" atom         -> neg
-             | NAME             -> var
-             | "(" sum ")"      -> brackets
+        ?atom: /\d+/           -> number
+            | "-" atom         -> neg
+            | NAME             -> var
+            | "(" sum ")"      -> brackets
 
+        left_atom: atom -> left_atom
+        right_atom: atom -> right_atom
+        
         %import common.WS_INLINE
         %ignore WS_INLINE
     """
