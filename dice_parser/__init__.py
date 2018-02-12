@@ -1,23 +1,22 @@
 import operator
 from functools import wraps
-from random import randrange
 
 from lark import Lark, InlineTransformer
 
+from dice_parser.dice_roller import DiceRoller, HighestDiceModifier, DiceModifier, NullDiceModifier, LowestDiceModifier
+
 
 class ParseResult:
-    def __init__(self, value, string, dice, flag=None):
+    def __init__(self, value, string, flag=None):
         self.value = value
         self.string = string
-        self.dice = dice
         self.flag = flag
 
     def __repr__(self):
-        return '{}({}, {}, {}, {})'.format(
+        return '{}({}, {}, {})'.format(
             type(self).__name__,
             repr(self.value),
             repr(self.string),
-            repr(self.dice),
             repr(self.flag)
         )
 
@@ -29,7 +28,6 @@ class ParseResult:
                 return cls(
                     operator_callable(*(x.value for x in args)),
                     template.format(*(x.string for x in args)),
-                    sum((x.dice for x in args), [])
                 )
 
             return decorated
@@ -64,54 +62,61 @@ class Transformer(InlineTransformer):
     def neg(self):
         pass
 
+    def dice_count(self, result):
+        return self._add_flag(result, 'dice_count')
+
+    def dice_size(self, result):
+        return self._add_flag(result, 'dice_size')
+
+    def dice_highest(self, count):
+        return ParseResult(HighestDiceModifier(int(count)), None, 'dice_modifier')
+
+    def dice_lowest(self, count):
+        return ParseResult(LowestDiceModifier(int(count)), None, 'dice_modifier')
+
     def brackets(self, result):
-        return ParseResult(result.value, '({})'.format(result.string), result.dice)
+        return ParseResult(result.value, '({})'.format(result.string))
 
     def roll(self, *args):
         count = 1
         size = 20
+        modifier = NullDiceModifier()
         for arg in args:
-            if arg.flag == 'left':
+            if arg.flag == 'dice_count':
                 count = arg.value
-            if arg.flag == 'right':
+            if arg.flag == 'dice_size':
                 size = arg.value
+            if arg.flag == 'dice_modifier':
+                modifier = arg.value
 
-        dice = []
-        for _ in range(int(count)):
-            dice.append(self._roll_die(size))
+        roller = DiceRoller(count, size, modifier)
+        rolled_result, rolled_dice = roller.roll()
 
-        return ParseResult(sum(dice), '[{}]'.format(', '.join(str(d) for d in dice)), dice)
-
-    @classmethod
-    def _roll_die(cls, size):
-        return 1 + randrange(0, size)
+        return ParseResult(rolled_result, '[{}]'.format(', '.join(str(d) for d in rolled_dice)), rolled_dice)
 
     def assign_var(self, name, result):
         self.vars[name] = ParseResult(
             result.value,
             name,
-            result.dice,
         )
 
         return ParseResult(
             result.value,
             '{} = {}'.format(name, result.string),
-            result.dice,
         )
 
     def var(self, name):
         return self.vars[name]
 
-    def left_atom(self, atom):
-        return ParseResult(atom.value, atom.string, atom.dice, 'left')
-
-    def right_atom(self, atom):
-        return ParseResult(atom.value, atom.string, atom.dice, 'right')
+    @classmethod
+    def _add_flag(cls, result, flag):
+        return ParseResult(result.value, result.string, flag)
 
 
 class DiceParser:
     GRAMMAR = """
         NAME: /[a-z_]+/
+        NUMBER: /\d+/
 
         ?start: sum
             | NAME "=" sum     -> assign_var
@@ -120,20 +125,23 @@ class DiceParser:
             | sum "+" product  -> add
             | sum "-" product  -> sub
 
-        ?product: die
-            | product "*" die  -> mul
-            | product "/" die  -> div
+        ?product: dice
+            | product "*" dice  -> mul
+            | product "/" dice  -> div
         
-        ?die: atom
-            | left_atom? "d" right_atom?  -> roll  
+        ?dice: atom
+            | dice_count? "d" dice_size? dice_modifier? -> roll
 
-        ?atom: /\d+/           -> number
+        ?atom: NUMBER          -> number
             | "-" atom         -> neg
             | NAME             -> var
             | "(" sum ")"      -> brackets
 
-        left_atom: atom -> left_atom
-        right_atom: atom -> right_atom
+        ?dice_modifier: "H" NUMBER -> dice_highest
+            | "L" NUMBER           -> dice_lowest
+
+        dice_count: atom -> dice_count
+        dice_size: atom -> dice_size
         
         %import common.WS_INLINE
         %ignore WS_INLINE
