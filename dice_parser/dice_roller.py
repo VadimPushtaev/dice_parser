@@ -39,7 +39,6 @@ class HighestDiceModifier(DiceModifier):
 class LowestDiceModifier(DiceModifier):
     def get_actual_dice(self, dice):
         sorted_dice = sorted(dice)
-        n = len(sorted_dice)
 
         return sorted_dice[:self._count], sorted_dice[self._count:]
 

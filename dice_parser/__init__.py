@@ -92,7 +92,7 @@ class Transformer(InlineTransformer):
         roller = DiceRoller(count, size, modifier)
         rolled_result, rolled_dice = roller.roll()
 
-        return ParseResult(rolled_result, '[{}]'.format(', '.join(str(d) for d in rolled_dice)), rolled_dice)
+        return ParseResult(rolled_result, '[{}]'.format(', '.join(str(d) for d in rolled_dice)))
 
     def assign_var(self, name, result):
         self.vars[name] = ParseResult(
