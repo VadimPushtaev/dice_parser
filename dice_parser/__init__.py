@@ -68,11 +68,11 @@ class Transformer(InlineTransformer):
     def dice_size(self, result):
         return self._add_flag(result, 'dice_size')
 
-    def dice_highest(self, count):
-        return ParseResult(HighestDiceModifier(int(count)), None, 'dice_modifier')
+    def dice_highest(self, result):
+        return ParseResult(HighestDiceModifier(int(result.value)), None, 'dice_modifier')
 
-    def dice_lowest(self, count):
-        return ParseResult(LowestDiceModifier(int(count)), None, 'dice_modifier')
+    def dice_lowest(self, result):
+        return ParseResult(LowestDiceModifier(int(result.value)), None, 'dice_modifier')
 
     def brackets(self, result):
         return ParseResult(result.value, '({})'.format(result.string))
@@ -130,15 +130,15 @@ class DiceParser:
             | product "/" dice  -> div
         
         ?dice: atom
-            | dice_count? "d" dice_size? dice_modifier? -> roll
+            | dice_count? ("d" | "D") dice_size? dice_modifier? -> roll
 
         ?atom: NUMBER          -> number
             | "-" atom         -> neg
             | NAME             -> var
             | "(" sum ")"      -> brackets
 
-        ?dice_modifier: "H" NUMBER -> dice_highest
-            | "L" NUMBER           -> dice_lowest
+        ?dice_modifier: ("h" | "H") atom -> dice_highest
+            | ("l" | "L") atom           -> dice_lowest
 
         dice_count: atom -> dice_count
         dice_size: atom -> dice_size

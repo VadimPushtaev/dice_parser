@@ -14,7 +14,7 @@ class DiceExpressionTestCase(TestCase):
         self.assertEqual('3 * 4 + 12 / 3 + (3 - 2)', result.string)
 
     def test_dice(self):
-        result = self.parser.parse('d10 * 3 + 2d + ( 3 d 30 )')
+        result = self.parser.parse('d10 * 3 + 2D + ( 3 D 30 )')
         self.assertEqual(160, result.value)
         self.assertEqual('[10] * 3 + [20, 20] + ([30, 30, 30])', result.string)
 
@@ -24,9 +24,14 @@ class DiceExpressionTestCase(TestCase):
         self.assertEqual('[9, 9, 9, 9] + 1', result.string)
 
     def test_dice__modifier(self):
-        rolled = iter([1, 6, 5, 4, 3, 2, 20, 15])
+        rolled = iter([
+            1, 6, 5, 4, 3, 2, # 6d6
+            1,                # L(1d20)
+            20, 15            # 2d20
+        ])
         DiceRoller._roll_die = lambda cls_, size: next(rolled)
-        result = self.parser.parse('6d6H3 + 2d20L1')
+
+        result = self.parser.parse('6d6h3 + 2d20L(1d1)')
         self.assertEqual(30, result.value)
         self.assertEqual('[1, 6, 5, 4, 3, 2] + [20, 15]', result.string)
 
