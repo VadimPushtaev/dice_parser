@@ -35,6 +35,14 @@ class DiceExpressionTestCase(TestCase):
         self.assertEqual(30, result.value)
         self.assertEqual('[1, 6, 5, 4, 3, 2] + [20, 15]', result.string)
 
+    def test_dice__strange_modifier(self):
+        self.assertEqual(self.parser.parse('3d10H5').value, 30)
+        self.assertEqual(self.parser.parse('3d10H0').value, 0)
+        self.assertEqual(self.parser.parse('3d10H(-1)').value, 0)
+        self.assertEqual(self.parser.parse('3d10L5').value, 30)
+        self.assertEqual(self.parser.parse('3d10L0').value, 0)
+        self.assertEqual(self.parser.parse('3d10L(-1)').value, 0)
+
     def test_vars(self):
         result = self.parser.parse('a=2+2')
         self.assertEqual(4, result.value)
