@@ -15,7 +15,7 @@ class DiceRoller:
 
     @classmethod
     def _roll_die(cls, size):
-        return 1 + randrange(0, size)
+        return randrange(1, 1 + size) if size > 0 else 0
 
 
 class DiceModifier:

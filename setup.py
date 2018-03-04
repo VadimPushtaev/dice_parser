@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='dice_parser',
-    version='0.7',
+    version='0.8',
     packages=['dice_parser'],
     install_requires=['lark-parser'],
     url='https://github.com/VadimPushtaev/dice_parser',

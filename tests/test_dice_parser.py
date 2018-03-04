@@ -18,6 +18,22 @@ class DiceExpressionTestCase(TestCase):
         self.assertEqual(160, result.value)
         self.assertEqual('[10] * 3 + [20, 20] + ([30, 30, 30])', result.string)
 
+    def test_dice__invalid_size(self):
+        result = self.parser.parse('3d0')
+        self.assertEqual(0, result.value)
+        self.assertEqual('[0, 0, 0]', result.string)
+        result = self.parser.parse('2d(-1)')
+        self.assertEqual(0, result.value)
+        self.assertEqual('[0, 0]', result.string)
+
+    def test_dice__invalid_count(self):
+        result = self.parser.parse('0d3')
+        self.assertEqual(0, result.value)
+        self.assertEqual('[]', result.string)
+        result = self.parser.parse('(-3)d3')
+        self.assertEqual(0, result.value)
+        self.assertEqual('[]', result.string)
+
     def test_dice__dynamic(self):
         result = self.parser.parse('(2+2) d (3*3)+1')
         self.assertEqual(37, result.value)

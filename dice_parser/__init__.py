@@ -66,6 +66,8 @@ class Transformer(InlineTransformer):
         return self._add_flag(result, 'dice_count')
 
     def dice_size(self, result):
+        if result.value < 1:
+            result.value = 0
         return self._add_flag(result, 'dice_size')
 
     def dice_highest(self, result):
