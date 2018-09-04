@@ -12,6 +12,11 @@ In [1]: from dice_parser import DiceParser
 
 In [2]: parser = DiceParser()
 
-In [3]: parser.parse('2d6 + 4')
-Out[3]: ParseResult(8, '[3, 1] + 4', None)
+In [3]: result = parser.parse('2d6 + 4')
+
+In [4]: result
+Out[4]: ParseResult(8, '[3, 1] + 4', None)
+
+In [5]: result.value
+Out[5]: 8
 ```
