@@ -34,11 +34,35 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
         super().__init__()
         self.vars: dict[str, NumberParseResult] = {}
 
-    add = NumberParseResult.operator(operator.add, '{} + {}')
-    sub = NumberParseResult.operator(operator.sub, '{} - {}')
-    mul = NumberParseResult.operator(operator.mul, '{} * {}')
-    div = NumberParseResult.operator(operator.floordiv, '{} / {}')
-    neg = NumberParseResult.operator(operator.neg, '-{}')
+    @v_args(inline=True)
+    def add(self, left: NumberParseResult, right: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult.binary_operator(
+            left, right, operator.add, '{} + {}'
+        )
+
+    @v_args(inline=True)
+    def sub(self, left: NumberParseResult, right: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult.binary_operator(
+            left, right, operator.sub, '{} - {}'
+        )
+
+    @v_args(inline=True)
+    def mul(self, left: NumberParseResult, right: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult.binary_operator(
+            left, right, operator.mul, '{} * {}'
+        )
+
+    @v_args(inline=True)
+    def div(self, left: NumberParseResult, right: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult.binary_operator(
+            left, right, operator.floordiv, '{} / {}'
+        )
+
+    @v_args(inline=True)
+    def neg(self, result: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult.unary_operator(
+            result, operator.neg, '-{}'
+        )
 
     @v_args(inline=True)
     def number(self, value: str) -> NumberParseResult:

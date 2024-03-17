@@ -1,19 +1,12 @@
 import typing
 from dataclasses import dataclass
 from typing import Callable
-
-from lark import v_args
-
 from dice_parser.modifier import DiceModifier
+
 
 NumberParseResultT = typing.TypeVar('NumberParseResultT', bound='NumberParseResult')
 
 
-class OperatorCallableResultT(typing.Protocol):
-    def __call__(self, *args: 'NumberParseResult') -> 'NumberParseResult':
-        ...
-
- 
 @dataclass
 class ParseResult:
     value: int
@@ -50,19 +43,26 @@ class NumberParseResult:
         )
 
     @classmethod
-    def operator(
-        cls: type[NumberParseResultT],
-        operator_callable: typing.Any,
+    def binary_operator(
+        cls: typing.Type[NumberParseResultT],
+        left: 'NumberParseResult',
+        right: 'NumberParseResult',
+        operator_callable: Callable[[int, int], int],
         template: str,
-    ) -> Callable[[typing.Any], OperatorCallableResultT]:
-        @v_args(inline=True)
-        def result(
-            decorated_self: typing.Any,
-            *args: NumberParseResult,
-        ) -> NumberParseResult:
-            return cls(
-                operator_callable(*(x.value for x in args)),
-                template.format(*(x.string for x in args)),
-            )
+    ) -> NumberParseResultT:
+        return cls(
+            operator_callable(left.value, right.value),
+            template.format(left.string, right.string),
+        )
 
-        return result
+    @classmethod
+    def unary_operator(
+        cls: typing.Type[NumberParseResultT],
+        value: 'NumberParseResult',
+        operator_callable: Callable[[int], int],
+        template: str,
+    ) -> NumberParseResultT:
+        return cls(
+            operator_callable(value.value),
+            template.format(value.string),
+        )
