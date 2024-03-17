@@ -1,6 +1,6 @@
 from lark import Lark
 
-from dice_parser.parser_result import InternalParseResult, ParseResult
+from dice_parser.parser_result import NumberParseResult, ParseResult
 from dice_parser.transformer import DiceTransformer
 
 
@@ -19,7 +19,7 @@ class DiceParser:
         ?product: dice
             | product "*" dice  -> mul
             | product "/" dice  -> div
-        
+
         ?dice: atom
             | dice_count? ("d" | "D") dice_size? dice_modifier? -> roll
 
@@ -33,7 +33,7 @@ class DiceParser:
 
         dice_count: atom -> dice_count
         dice_size: atom -> dice_size
-        
+
         %import common.WS_INLINE
         %ignore WS_INLINE
     """
@@ -43,7 +43,7 @@ class DiceParser:
 
     def parse(self, string: str) -> ParseResult:
         result = self._parser.parse(string)
-        assert isinstance(result, InternalParseResult)
+        assert isinstance(result, NumberParseResult)
 
         return result.to_public_result()
 

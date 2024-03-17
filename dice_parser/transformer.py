@@ -4,7 +4,7 @@ from lark import Transformer, v_args
 
 from dice_parser.dice_roller import DiceRoller
 from dice_parser.modifier import DiceModifier
-from dice_parser.parser_result import InternalParseResult
+from dice_parser.parser_result import NumberParseResult, ModifierParseResult
 
 
 class NullDiceModifier(DiceModifier):
@@ -29,86 +29,83 @@ class LowestDiceModifier(DiceModifier):
         return sorted_dice[:count], sorted_dice[count:]
 
 
-class DiceTransformer(Transformer[InternalParseResult, int]):
+class DiceTransformer(Transformer[NumberParseResult, int]):
     def __init__(self) -> None:
         super().__init__()
-        self.vars: dict[str, InternalParseResult] = {}
+        self.vars: dict[str, NumberParseResult] = {}
 
-    add = InternalParseResult.operator(operator.add, '{} + {}')
-    sub = InternalParseResult.operator(operator.sub, '{} - {}')
-    mul = InternalParseResult.operator(operator.mul, '{} * {}')
-    div = InternalParseResult.operator(operator.floordiv, '{} / {}')
-    neg = InternalParseResult.operator(operator.neg, '-{}')
-
-    @v_args(inline=True)
-    def number(self, value: str) -> InternalParseResult:
-        return InternalParseResult(int(value), str(int(value)), None)
+    add = NumberParseResult.operator(operator.add, '{} + {}')
+    sub = NumberParseResult.operator(operator.sub, '{} - {}')
+    mul = NumberParseResult.operator(operator.mul, '{} * {}')
+    div = NumberParseResult.operator(operator.floordiv, '{} / {}')
+    neg = NumberParseResult.operator(operator.neg, '-{}')
 
     @v_args(inline=True)
-    def dice_count(self, result: InternalParseResult) -> InternalParseResult:
+    def number(self, value: str) -> NumberParseResult:
+        return NumberParseResult(int(value), str(int(value)), None)
+
+    @v_args(inline=True)
+    def dice_count(self, result: NumberParseResult) -> NumberParseResult:
         return self._add_flag(result, 'dice_count')
 
     @v_args(inline=True)
-    def dice_size(self, result: InternalParseResult) -> InternalParseResult:
-        assert isinstance(result.value, int)
+    def dice_size(self, result: NumberParseResult) -> NumberParseResult:
         if result.value < 1:
             result.value = 0
         return self._add_flag(result, 'dice_size')
 
     @v_args(inline=True)
-    def dice_highest(self, result: InternalParseResult) -> InternalParseResult:
-        assert isinstance(result.value, int)
-        return InternalParseResult(HighestDiceModifier(int(result.value)), None, 'dice_modifier')
+    def dice_highest(self, result: NumberParseResult) -> ModifierParseResult:
+        return ModifierParseResult(HighestDiceModifier(int(result.value)))
 
     @v_args(inline=True)
-    def dice_lowest(self, result: InternalParseResult) -> InternalParseResult:
-        assert isinstance(result.value, int)
-        return InternalParseResult(LowestDiceModifier(int(result.value)), None, 'dice_modifier')
+    def dice_lowest(self, result: NumberParseResult) -> ModifierParseResult:
+        return ModifierParseResult(LowestDiceModifier(int(result.value)))
 
     @v_args(inline=True)
-    def brackets(self, result: InternalParseResult) -> InternalParseResult:
-        return InternalParseResult(result.value, '({})'.format(result.string))
+    def brackets(self, result: NumberParseResult) -> NumberParseResult:
+        return NumberParseResult(result.value, '({})'.format(result.string))
 
     @v_args(inline=True)
-    def roll(self, *args: InternalParseResult) -> InternalParseResult:
+    def roll(self, *args: NumberParseResult | ModifierParseResult) -> NumberParseResult:
+        # default is 1d20
         count = 1
         size = 20
+
         modifier: DiceModifier = NullDiceModifier()
         for arg in args:
-            if arg.flag == 'dice_count':
-                assert isinstance(arg.value, int)
-                count = arg.value
-            if arg.flag == 'dice_size':
-                assert isinstance(arg.value, int)
-                size = arg.value
-            if arg.flag == 'dice_modifier':
-                assert isinstance(arg.value, DiceModifier)
-                modifier = arg.value
+            if isinstance(arg, ModifierParseResult):
+                modifier = arg.modifier
+            else:
+                if arg.flag == 'dice_count':
+                    count = arg.value
+                if arg.flag == 'dice_size':
+                    size = arg.value
 
         roller = DiceRoller(count, size, modifier)
         rolled_result, rolled_dice = roller.roll()
 
-        return InternalParseResult(
+        return NumberParseResult(
             rolled_result,
             '[{}]'.format(', '.join(str(d) for d in rolled_dice)),
         )
 
     @v_args(inline=True)
-    def assign_var(self, name: str, result: InternalParseResult) -> InternalParseResult:
-        self.vars[name] = InternalParseResult(
+    def assign_var(self, name: str, result: NumberParseResult) -> NumberParseResult:
+        self.vars[name] = NumberParseResult(
             result.value,
             name,
         )
 
-        return InternalParseResult(
+        return NumberParseResult(
             result.value,
             '{} = {}'.format(name, result.string),
         )
 
     @v_args(inline=True)
-    def var(self, name: str) -> InternalParseResult:
+    def var(self, name: str) -> NumberParseResult:
         return self.vars[name]
 
     @classmethod
-    def _add_flag(cls, result: InternalParseResult, flag: str) -> InternalParseResult:
-        return InternalParseResult(result.value, result.string, flag)
+    def _add_flag(cls, result: NumberParseResult, flag: str) -> NumberParseResult:
+        return NumberParseResult(result.value, result.string, flag)

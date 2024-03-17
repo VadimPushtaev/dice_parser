@@ -6,30 +6,34 @@ from lark import v_args
 
 from dice_parser.modifier import DiceModifier
 
-InternalParserResultT = typing.TypeVar('InternalParserResultT', bound='InternalParseResult')
+NumberParseResultT = typing.TypeVar('NumberParseResultT', bound='NumberParseResult')
 
 
 class OperatorCallableResultT(typing.Protocol):
-    def __call__(self, *args: 'InternalParseResult') -> 'InternalParseResult':
+    def __call__(self, *args: 'NumberParseResult') -> 'NumberParseResult':
         ...
 
-
-
+ 
 @dataclass
 class ParseResult:
     value: int
     string: str
 
 
-class InternalParseResult:
+@dataclass
+class ModifierParseResult:
+    modifier: DiceModifier
+
+
+class NumberParseResult:
     def __init__(
         self,
-        value: int | DiceModifier,
-        string: str | None,
+        value: int,
+        string: str,
         flag: str | None = None,
     ) -> None:
-        self.value: int | DiceModifier = value
-        self.string: str | None = string
+        self.value: int = value
+        self.string: str = string
         self.flag: str | None = flag
 
     def to_public_result(self) -> ParseResult:
@@ -47,15 +51,15 @@ class InternalParseResult:
 
     @classmethod
     def operator(
-        cls: type[InternalParserResultT],
+        cls: type[NumberParseResultT],
         operator_callable: typing.Any,
         template: str,
     ) -> Callable[[typing.Any], OperatorCallableResultT]:
         @v_args(inline=True)
         def result(
             decorated_self: typing.Any,
-            *args: InternalParseResult,
-        ) -> InternalParseResult:
+            *args: NumberParseResult,
+        ) -> NumberParseResult:
             return cls(
                 operator_callable(*(x.value for x in args)),
                 template.format(*(x.string for x in args)),
