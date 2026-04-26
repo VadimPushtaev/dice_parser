@@ -11,3 +11,8 @@ repos:
         entry: poetry run ruff format
         language: system
         types_or: [python, pyi]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy --config-file pyproject.toml
+        language: system
+        pass_filenames: false

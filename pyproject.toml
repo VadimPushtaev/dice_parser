@@ -39,6 +39,32 @@ ignore = [
     "PLR2004", # magic-value-comparison: test data is clearer inline
 ]
 
+[tool.mypy]
+files = ["dice_parser", "tests"]
+python_version = "3.12"
+strict = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+disallow_any_expr = true
+disallow_any_unimported = true
+extra_checks = true
+local_partial_types = true
+strict_bytes = true
+warn_unreachable = true
+warn_unused_configs = true
+enable_error_code = [
+    "deprecated",
+    "explicit-override",
+    "ignore-without-code",
+    "mutable-override",
+    "possibly-undefined",
+    "redundant-expr",
+    "redundant-self",
+    "truthy-bool",
+    "truthy-iterable",
+    "unimported-reveal",
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
