@@ -1,15 +1,21 @@
+"""Roll dice and apply dice modifiers."""
+
 from random import randrange
 
 from dice_parser.modifier import DiceModifier
 
 
 class DiceRoller:
+    """Roll a fixed number of dice with a modifier."""
+
     def __init__(self, count: int, size: int, modifier: DiceModifier) -> None:
+        """Initialize the roller with dice count, size, and modifier."""
         self._count: int = count
         self._size: int = size
         self._modifier: DiceModifier = modifier
 
     def roll(self) -> tuple[int, list[int]]:
+        """Roll dice and return the modified total with all rolled values."""
         rolled = [self._roll_die(self._size) for _ in range(self._count)]
         actual, ignored = self._modifier.get_actual_dice(rolled)
 

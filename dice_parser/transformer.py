@@ -1,3 +1,5 @@
+"""Transform parsed dice expression trees into parser results."""
+
 import operator
 
 from lark import Transformer, v_args
@@ -8,12 +10,18 @@ from dice_parser.parser_result import ModifierParseResult, NumberParseResult
 
 
 class NullDiceModifier(DiceModifier):
+    """Use every rolled die."""
+
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
+        """Return all dice as actual dice."""
         return dice, []
 
 
 class HighestDiceModifier(DiceModifier):
+    """Use the highest rolled dice."""
+
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
+        """Return the highest dice as actual dice."""
         sorted_dice = sorted(dice)
         count = self._safe_count(dice)
         n = len(sorted_dice)
@@ -22,7 +30,10 @@ class HighestDiceModifier(DiceModifier):
 
 
 class LowestDiceModifier(DiceModifier):
+    """Use the lowest rolled dice."""
+
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
+        """Return the lowest dice as actual dice."""
         sorted_dice = sorted(dice)
         count = self._safe_count(dice)
 
@@ -30,7 +41,10 @@ class LowestDiceModifier(DiceModifier):
 
 
 class DiceTransformer(Transformer[NumberParseResult, int]):
+    """Transform grammar callbacks into evaluated parse results."""
+
     def __init__(self) -> None:
+        """Initialize variable storage."""
         super().__init__()
         self.vars: dict[str, NumberParseResult] = {}
 
@@ -40,6 +54,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
         left: NumberParseResult,
         right: NumberParseResult,
     ) -> NumberParseResult:
+        """Add two number results."""
         return NumberParseResult.binary_operator(
             left,
             right,
@@ -53,6 +68,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
         left: NumberParseResult,
         right: NumberParseResult,
     ) -> NumberParseResult:
+        """Subtract two number results."""
         return NumberParseResult.binary_operator(
             left,
             right,
@@ -66,6 +82,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
         left: NumberParseResult,
         right: NumberParseResult,
     ) -> NumberParseResult:
+        """Multiply two number results."""
         return NumberParseResult.binary_operator(
             left,
             right,
@@ -79,6 +96,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
         left: NumberParseResult,
         right: NumberParseResult,
     ) -> NumberParseResult:
+        """Divide two number results with floor division."""
         return NumberParseResult.binary_operator(
             left,
             right,
@@ -88,6 +106,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
 
     @v_args(inline=True)
     def neg(self, result: NumberParseResult) -> NumberParseResult:
+        """Negate a number result."""
         return NumberParseResult.unary_operator(
             result,
             operator.neg,
@@ -96,33 +115,39 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
 
     @v_args(inline=True)
     def number(self, value: str) -> NumberParseResult:
+        """Parse an integer token."""
         return NumberParseResult(int(value), str(int(value)), None)
 
     @v_args(inline=True)
     def dice_count(self, result: NumberParseResult) -> NumberParseResult:
+        """Mark a result as a dice count."""
         return self._add_flag(result, "dice_count")
 
     @v_args(inline=True)
     def dice_size(self, result: NumberParseResult) -> NumberParseResult:
+        """Mark a result as a dice size."""
         if result.value < 1:
             result.value = 0
         return self._add_flag(result, "dice_size")
 
     @v_args(inline=True)
     def dice_highest(self, result: NumberParseResult) -> ModifierParseResult:
+        """Build a highest-dice modifier result."""
         return ModifierParseResult(HighestDiceModifier(int(result.value)))
 
     @v_args(inline=True)
     def dice_lowest(self, result: NumberParseResult) -> ModifierParseResult:
+        """Build a lowest-dice modifier result."""
         return ModifierParseResult(LowestDiceModifier(int(result.value)))
 
     @v_args(inline=True)
     def brackets(self, result: NumberParseResult) -> NumberParseResult:
+        """Wrap a result string in brackets."""
         return NumberParseResult(result.value, f"({result.string})")
 
     @v_args(inline=True)
     def roll(self, *args: NumberParseResult | ModifierParseResult) -> NumberParseResult:
-        # default is 1d20
+        """Roll dice, defaulting to 1d20 when count or size is omitted."""
         count = 1
         size = 20
 
@@ -146,6 +171,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
 
     @v_args(inline=True)
     def assign_var(self, name: str, result: NumberParseResult) -> NumberParseResult:
+        """Assign a parsed result to a variable."""
         self.vars[name] = NumberParseResult(
             result.value,
             name,
@@ -158,6 +184,7 @@ class DiceTransformer(Transformer[NumberParseResult, int]):
 
     @v_args(inline=True)
     def var(self, name: str) -> NumberParseResult:
+        """Return a previously assigned variable."""
         return self.vars[name]
 
     @classmethod

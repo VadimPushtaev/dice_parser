@@ -1,3 +1,5 @@
+"""Public parser for dice expressions."""
+
 from lark import Lark
 
 from dice_parser.parser_result import NumberParseResult, ParseResult
@@ -5,6 +7,8 @@ from dice_parser.transformer import DiceTransformer
 
 
 class DiceParser:
+    """Parse arithmetic expressions with dice syntax."""
+
     GRAMMAR = """
         NAME: /[a-z_]+/
         NUMBER: /\\d+/
@@ -39,9 +43,11 @@ class DiceParser:
     """
 
     def __init__(self) -> None:
+        """Initialize the Lark parser."""
         self._parser = Lark(self.GRAMMAR, parser="lalr", transformer=DiceTransformer())
 
     def parse(self, string: str) -> ParseResult:
+        """Parse a dice expression string."""
         result = self._parser.parse(string)
         assert isinstance(result, NumberParseResult)
 
