@@ -3,6 +3,7 @@
 import typing
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import override
 
 from dice_parser.modifier import DiceModifier
 from dice_parser.type_helpers import ensure_type
@@ -44,6 +45,7 @@ class NumberParseResult:
             ensure_type(self.string, str, "string"),
         )
 
+    @override
     def __repr__(self) -> str:
         """Return a debug representation of this result."""
         return f"{type(self).__name__}({self.value!r}, {self.string!r}, {self.flag!r})"

@@ -1,7 +1,9 @@
 """Tests for dice expression parsing."""
 
 from itertools import chain
+from typing import override
 from unittest import TestCase
+from unittest.mock import patch
 
 from dice_parser.dice_roller import DiceRoller
 from dice_parser.parser import DiceParser
@@ -10,15 +12,17 @@ from dice_parser.parser import DiceParser
 class DiceExpressionTestCase(TestCase):
     """Test dice expression parsing."""
 
+    @override
     def setUp(self) -> None:
         """Create a parser that rolls the maximum value by default."""
         self.parser = DiceParser()
 
-        def roll_max(cls_: DiceRoller, size: int) -> int:
-            del cls_
+        def roll_max(size: int) -> int:
             return size
 
-        DiceRoller._roll_die = roll_max
+        roll_patcher = patch.object(DiceRoller, "_roll_die", staticmethod(roll_max))
+        roll_patcher.start()
+        self.addCleanup(roll_patcher.stop)
 
     def test_simple(self) -> None:
         """Parse plain arithmetic."""
@@ -66,13 +70,12 @@ class DiceExpressionTestCase(TestCase):
             ),
         )
 
-        def roll_next(cls_: DiceRoller, size: int) -> int:
-            del cls_, size
+        def roll_next(size: int) -> int:
+            del size
             return next(rolled)
 
-        DiceRoller._roll_die = roll_next
-
-        result = self.parser.parse("6d6h3 + 2d20L(1d1)")
+        with patch.object(DiceRoller, "_roll_die", staticmethod(roll_next)):
+            result = self.parser.parse("6d6h3 + 2d20L(1d1)")
         assert result.value == 30
         assert result.string == "[1, 6, 5, 4, 3, 2] + [20, 15]"
 

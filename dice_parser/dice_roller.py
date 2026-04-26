@@ -28,6 +28,6 @@ class DiceRoller:
 
         return sum(actual), rolled
 
-    @classmethod
-    def _roll_die(cls, size: int) -> int:
+    @staticmethod
+    def _roll_die(size: int) -> int:
         return roll_game_die(size)

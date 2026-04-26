@@ -1,6 +1,7 @@
 """Dice roll modifiers."""
 
 from abc import ABC, abstractmethod
+from typing import override
 
 
 class DiceModifier(ABC):
@@ -21,6 +22,7 @@ class DiceModifier(ABC):
 class NullDiceModifier(DiceModifier):
     """Use every rolled die."""
 
+    @override
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
         """Return all dice as actual dice."""
         return dice, []
@@ -29,6 +31,7 @@ class NullDiceModifier(DiceModifier):
 class HighestDiceModifier(DiceModifier):
     """Use the highest rolled dice."""
 
+    @override
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
         """Return the highest dice as actual dice."""
         sorted_dice = sorted(dice)
@@ -41,6 +44,7 @@ class HighestDiceModifier(DiceModifier):
 class LowestDiceModifier(DiceModifier):
     """Use the lowest rolled dice."""
 
+    @override
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
         """Return the lowest dice as actual dice."""
         sorted_dice = sorted(dice)

@@ -1,5 +1,6 @@
 """Tests for dice rolling helpers."""
 
+from typing import override
 from unittest import TestCase
 
 from dice_parser.modifier import DiceModifier
@@ -8,8 +9,10 @@ from dice_parser.modifier import DiceModifier
 class SomeDiceModifier(DiceModifier):
     """Concrete dice modifier for base-class tests."""
 
+    @override
     def get_actual_dice(self, dice: list[int]) -> tuple[list[int], list[int]]:
         """Return no dice."""
+        return dice, []
 
 
 class DiceRollerTestCase(TestCase):
