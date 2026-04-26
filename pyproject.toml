@@ -10,7 +10,7 @@ repository = "https://github.com/VadimPushtaev/dice_parser"
 packages = [{ include = "dice_parser" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
+python = ">=3.12,<4.0"
 lark = ">=1.1.9"
 
 [tool.poetry.group.dev.dependencies]
@@ -21,7 +21,7 @@ ruff = ">=0.14"
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py312"
 preview = true
 
 [tool.ruff.lint]
