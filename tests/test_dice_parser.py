@@ -8,7 +8,12 @@ from dice_parser.parser import DiceParser
 class DiceExpressionTestCase(TestCase):
     def setUp(self) -> None:
         self.parser = DiceParser()
-        DiceRoller._roll_die = lambda cls_, size: size
+
+        def roll_max(cls_: DiceRoller, size: int) -> int:
+            del cls_
+            return size
+
+        DiceRoller._roll_die = roll_max
 
     def test_simple(self) -> None:
         result = self.parser.parse("3*4 + 12/3 + ( 3-2 )")
@@ -49,7 +54,12 @@ class DiceExpressionTestCase(TestCase):
                 (20, 15),  # 2d20
             ),
         )
-        DiceRoller._roll_die = lambda cls_, size: next(rolled)
+
+        def roll_next(cls_: DiceRoller, size: int) -> int:
+            del cls_, size
+            return next(rolled)
+
+        DiceRoller._roll_die = roll_next
 
         result = self.parser.parse("6d6h3 + 2d20L(1d1)")
         assert result.value == 30
