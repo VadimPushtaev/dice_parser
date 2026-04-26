@@ -39,12 +39,10 @@ class DiceParser:
     """
 
     def __init__(self) -> None:
-        self._parser = Lark(self.GRAMMAR, parser='lalr', transformer=DiceTransformer())
+        self._parser = Lark(self.GRAMMAR, parser="lalr", transformer=DiceTransformer())
 
     def parse(self, string: str) -> ParseResult:
         result = self._parser.parse(string)
         assert isinstance(result, NumberParseResult)
 
         return result.to_public_result()
-
-

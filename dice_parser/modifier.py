@@ -1,7 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 
-class DiceModifier(metaclass=ABCMeta):
+class DiceModifier(ABC):
     def __init__(self, count: int = 0) -> None:
         self._count: int = count
 
@@ -24,7 +24,7 @@ class HighestDiceModifier(DiceModifier):
         count = self._safe_count(dice)
         n = len(sorted_dice)
 
-        return sorted_dice[n - count:], sorted_dice[:n - count]
+        return sorted_dice[n - count :], sorted_dice[: n - count]
 
 
 class LowestDiceModifier(DiceModifier):

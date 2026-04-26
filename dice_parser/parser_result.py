@@ -1,10 +1,10 @@
 import typing
 from dataclasses import dataclass
 from typing import Callable
+
 from dice_parser.modifier import DiceModifier
 
-
-NumberParseResultT = typing.TypeVar('NumberParseResultT', bound='NumberParseResult')
+NumberParseResultT = typing.TypeVar("NumberParseResultT", bound="NumberParseResult")
 
 
 @dataclass
@@ -35,18 +35,13 @@ class NumberParseResult:
         return ParseResult(self.value, self.string)
 
     def __repr__(self) -> str:
-        return '{}({}, {}, {})'.format(
-            type(self).__name__,
-            repr(self.value),
-            repr(self.string),
-            repr(self.flag)
-        )
+        return f"{type(self).__name__}({self.value!r}, {self.string!r}, {self.flag!r})"
 
     @classmethod
     def binary_operator(
         cls: typing.Type[NumberParseResultT],
-        left: 'NumberParseResult',
-        right: 'NumberParseResult',
+        left: "NumberParseResult",
+        right: "NumberParseResult",
         operator_callable: Callable[[int, int], int],
         template: str,
     ) -> NumberParseResultT:
@@ -58,7 +53,7 @@ class NumberParseResult:
     @classmethod
     def unary_operator(
         cls: typing.Type[NumberParseResultT],
-        value: 'NumberParseResult',
+        value: "NumberParseResult",
         operator_callable: Callable[[int], int],
         template: str,
     ) -> NumberParseResultT:
