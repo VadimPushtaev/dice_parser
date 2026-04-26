@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dice-parser"
-version = "1.0.0"
+version = "1.1.0"
 description = "Arithmetic expressions with dice roll support"
 authors = ["Vadim Pushtaev <pushtaev.vm@gmail.com>"]
 license = "MIT"
