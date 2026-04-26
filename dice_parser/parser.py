@@ -4,6 +4,7 @@ from lark import Lark
 
 from dice_parser.parser_result import NumberParseResult, ParseResult
 from dice_parser.transformer import DiceTransformer
+from dice_parser.type_helpers import ensure_type
 
 
 class DiceParser:
@@ -49,6 +50,5 @@ class DiceParser:
     def parse(self, string: str) -> ParseResult:
         """Parse a dice expression string."""
         result = self._parser.parse(string)
-        assert isinstance(result, NumberParseResult)
 
-        return result.to_public_result()
+        return ensure_type(result, NumberParseResult, "parse result").to_public_result()

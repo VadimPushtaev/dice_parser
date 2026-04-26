@@ -1,12 +1,11 @@
 """Internal and public parser result objects."""
 
 import typing
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from dice_parser.modifier import DiceModifier
-
-NumberParseResultT = typing.TypeVar("NumberParseResultT", bound="NumberParseResult")
+from dice_parser.type_helpers import ensure_type
 
 
 @dataclass
@@ -40,9 +39,10 @@ class NumberParseResult:
 
     def to_public_result(self) -> ParseResult:
         """Convert this internal result to a public result."""
-        assert isinstance(self.value, int)
-        assert isinstance(self.string, str)
-        return ParseResult(self.value, self.string)
+        return ParseResult(
+            ensure_type(self.value, int, "value"),
+            ensure_type(self.string, str, "string"),
+        )
 
     def __repr__(self) -> str:
         """Return a debug representation of this result."""
@@ -50,12 +50,12 @@ class NumberParseResult:
 
     @classmethod
     def binary_operator(
-        cls: typing.Type[NumberParseResultT],
+        cls,
         left: "NumberParseResult",
         right: "NumberParseResult",
         operator_callable: Callable[[int, int], int],
         template: str,
-    ) -> NumberParseResultT:
+    ) -> typing.Self:
         """Build a result from a binary operation."""
         return cls(
             operator_callable(left.value, right.value),
@@ -64,11 +64,11 @@ class NumberParseResult:
 
     @classmethod
     def unary_operator(
-        cls: typing.Type[NumberParseResultT],
+        cls,
         value: "NumberParseResult",
         operator_callable: Callable[[int], int],
         template: str,
-    ) -> NumberParseResultT:
+    ) -> typing.Self:
         """Build a result from a unary operation."""
         return cls(
             operator_callable(value.value),
