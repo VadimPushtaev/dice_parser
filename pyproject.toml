@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "dice-parser"
+version = "1.0.0"
+description = "Arithmetic expressions with dice roll support"
+authors = ["Vadim Pushtaev <pushtaev.vm@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/VadimPushtaev/dice_parser"
+repository = "https://github.com/VadimPushtaev/dice_parser"
+packages = [{ include = "dice_parser" }]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+lark = ">=1.1.9"
+
+[tool.poetry.group.dev.dependencies]
+mypy = ">=1.9"
+pytest = ">=8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
