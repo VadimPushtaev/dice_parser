@@ -30,6 +30,7 @@ select = ["ALL"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
     "S101", # assert: pytest uses plain asserts for test expectations
+    "SLF001", # private-member-access: tests may exercise internals directly
     "PLR2004", # magic-value-comparison: test data is clearer inline
 ]
 
