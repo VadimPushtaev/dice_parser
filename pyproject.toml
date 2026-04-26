@@ -27,6 +27,12 @@ preview = true
 [tool.ruff.lint]
 select = ["ALL"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101", # assert: pytest uses plain asserts for test expectations
+    "PLR2004", # magic-value-comparison: test data is clearer inline
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
