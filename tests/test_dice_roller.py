@@ -10,7 +10,7 @@ class SomeDiceModifier(DiceModifier):
 
 class DiceRollerTestCase(TestCase):
     def test__safe_count(self):
-        self.assertEqual(SomeDiceModifier(-3)._safe_count([1, 2]), 0)
-        self.assertEqual(SomeDiceModifier(0)._safe_count([1, 2]), 0)
-        self.assertEqual(SomeDiceModifier(2)._safe_count([1, 2]), 2)
-        self.assertEqual(SomeDiceModifier(5)._safe_count([1, 2]), 2)
+        assert SomeDiceModifier(-3)._safe_count([1, 2]) == 0
+        assert SomeDiceModifier(0)._safe_count([1, 2]) == 0
+        assert SomeDiceModifier(2)._safe_count([1, 2]) == 2
+        assert SomeDiceModifier(5)._safe_count([1, 2]) == 2
